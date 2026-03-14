@@ -1,60 +1,62 @@
 
-# Encry - Chat E2EE (MVP)
+# Encry - E2EE Chat (MVP)
 
-Este proyecto implementa un **chat de consola con cifrado End‑to‑End (E2EE)** utilizando WebSockets.
+Alejandro Quiñones, Julio Prado, Juan David Acevedo, Martín Gómez Caicedo
 
-El objetivo del sistema es demostrar que los mensajes **solo pueden ser leídos por los clientes** que participan en la sala.  
-El servidor actúa únicamente como **relay de mensajes** y nunca tiene acceso al contenido en texto plano.
+This project implements a **console-based chat with End‑to‑End Encryption (E2EE)** using WebSockets.
 
----
-
-# Arquitectura
-
-- **Servidor (host)**
-  - Maneja conexiones WebSocket.
-  - Reenvía mensajes entre clientes.
-  - No posee claves para descifrar contenido.
-
-- **Clientes**
-  - Generan sus propias claves.
-  - Realizan intercambio de claves entre peers.
-  - Cifran y descifran mensajes localmente.
-
-Por diseño, el servidor solo observa **ciphertext**.
+The goal of the system is to demonstrate that messages **can only be read by the clients** participating in the room.  
+The server acts solely as a **message relay** and never has access to the plaintext content.
 
 ---
 
-# Criptografía utilizada
+# Architecture
 
-El sistema utiliza primitivas criptográficas modernas:
+- **Server (host)**
+  - Manages WebSocket connections.
+  - Forwards messages between clients.
+  - Does not possess keys to decrypt content.
 
-| Algoritmo | Uso |
+- **Clients**
+  - Generate their own keys.
+  - Perform key exchange between peers.
+  - Encrypt and decrypt messages locally.
+
+By design, the server only sees **ciphertext**.
+
+---
+
+# Cryptography Used
+
+The system uses modern cryptographic primitives:
+
+| Algorithm | Purpose |
 |---|---|
-| X25519 | Intercambio de claves entre peers |
-| Ed25519 | Firma de mensajes para autenticidad |
-| AES‑GCM | Cifrado autenticado de mensajes |
+| X25519 | Key exchange between peers |
+| Ed25519 | Message signatures for authenticity |
+| AES‑GCM | Authenticated message encryption |
 
-Flujo simplificado:
+Simplified flow:
 
-1. Cada cliente genera claves de cifrado y firma.
-2. Los clientes intercambian claves públicas.
-3. Se deriva una **clave compartida**.
-4. Los mensajes se cifran con **AES‑GCM** antes de enviarse.
-5. El servidor solo retransmite los paquetes cifrados.
+1. Each client generates encryption and signing keys.
+2. Clients exchange public keys.
+3. A **shared key** is derived.
+4. Messages are encrypted with **AES‑GCM** before being sent.
+5. The server only retransmits encrypted packets.
 
 ---
 
-# Instalación
+# Installation
 
-## Opción 1 — usando `pip`
+## Option 1 — using `pip`
 
-Crear entorno virtual:
+Create a virtual environment:
 
 ```bash
 python -m venv .venv
 ```
 
-Activar entorno:
+Activate the environment:
 
 **Linux / macOS**
 ```bash
@@ -66,7 +68,7 @@ source .venv/bin/activate
 .venv\Scripts\activate
 ```
 
-Instalar dependencias:
+Install dependencies:
 
 ```bash
 pip install -e .
@@ -74,9 +76,9 @@ pip install -e .
 
 ---
 
-## Opción 2 — usando `uv`
+## Option 2 — using `uv`
 
-Sincronizar dependencias:
+Synchronize dependencies:
 
 ```bash
 uv sync
@@ -84,17 +86,17 @@ uv sync
 
 ---
 
-# Ejecución
+# Running the Project
 
-## 1. Levantar el servidor
+## 1. Start the server
 
-Con pip:
+With pip:
 
 ```bash
 python -m server.main --host 127.0.0.1 --port 8765
 ```
 
-Con uv:
+With uv:
 
 ```bash
 uv run server --host 127.0.0.1 --port 8765
@@ -102,13 +104,13 @@ uv run server --host 127.0.0.1 --port 8765
 
 ---
 
-## 2. Ejecutar cliente 1
+## 2. Run client 1
 
 ```bash
 python -m client.main --user alice --room general
 ```
 
-o
+or
 
 ```bash
 uv run client --user alice --room general
@@ -116,33 +118,34 @@ uv run client --user alice --room general
 
 ---
 
-## 3. Ejecutar cliente 2
+## 3. Run client 2
 
 ```bash
 python -m client.main --user bob --room general
 ```
 
-o
+or
 
 ```bash
 uv run client --user bob --room general
 ```
+
 ![alt text](images/alice.png)
 ![alt text](images/bob.png)
 
 ---
 
-# Comandos del cliente
+# Client Commands
 
-| Comando | Descripción |
+| Command | Description |
 |---|---|
-| /help | Mostrar ayuda |
-| /peers | Listar peers conocidos |
-| /quit | Salir del chat |
+| /help | Show help |
+| /peers | List known peers |
+| /quit | Exit the chat |
 
 ---
 
-# Estructura del proyecto
+# Project Structure
 
 ```
 client/
@@ -158,40 +161,39 @@ server/
 crypto_utils.py
 ```
 
-Descripción:
+Description:
 
-- **client/main.py** → CLI del cliente.
-- **client/runtime.py** → lógica de red y cifrado.
-- **server/main.py** → servidor WebSocket.
-- **server/runtime.py** → relay de mensajes.
-- **crypto_utils.py** → primitivas criptográficas compartidas.
-
----
-
-# Verificación de privacidad con Wireshark
-
-Para demostrar que el sistema cumple con la propiedad **End‑to‑End Encryption**, se capturó el tráfico de red utilizando **Wireshark**.
-
-El objetivo de este análisis es verificar que:
-
-- El servidor **no recibe texto plano**
-- Los mensajes viajan **cifrados**
-- Solo los clientes pueden descifrarlos
-
-La captura se realizó monitoreando el tráfico en el puerto del servidor WebSocket.
+- **client/main.py** → Client CLI.
+- **client/runtime.py** → Networking and encryption logic.
+- **server/main.py** → WebSocket server.
+- **server/runtime.py** → Message relay logic.
+- **crypto_utils.py** → Shared cryptographic primitives.
 
 ---
 
-# Captura 1 — Tráfico WebSocket
+# Privacy Verification with Wireshark
 
-![Captura 1](images/wireshark1.png)
+To demonstrate that the system satisfies the **End‑to‑End Encryption** property, network traffic was captured using **Wireshark**.
 
+The objective of this analysis is to verify that:
 
-## Análisis
+- The server **does not receive plaintext**
+- Messages travel **encrypted**
+- Only clients can decrypt them
 
-En esta captura se observa el tráfico WebSocket generado por la aplicación.
+The capture was performed by monitoring traffic on the WebSocket server port.
 
-Los paquetes aparecen como:
+---
+
+# Capture 1 — WebSocket Traffic
+
+![Capture 1](images/wireshark1.png)
+
+## Analysis
+
+In this capture we observe the WebSocket traffic generated by the application.
+
+Packets appear as:
 
 ```
 WebSocket Text [FIN] [MASKED]
@@ -199,51 +201,51 @@ WebSocket Ping
 WebSocket Pong
 ```
 
-Esto confirma que:
+This confirms that:
 
-- La comunicación entre cliente y servidor se realiza mediante WebSockets
+- Communication between client and server is performed via WebSockets
 
-- Los mensajes del chat se transmiten dentro de frames WebSocket Text
+- Chat messages are transmitted inside WebSocket Text frames
 
-- El contenido del mensaje no es visible en esta vista, ya que Wireshark solo muestra el tipo de frame.
+- The message content is not visible in this view, since Wireshark only displays the frame type.
 
-El uso de WebSockets permite mantener una conexión persistente entre cliente y servidor para transmitir mensajes en tiempo real.
+Using WebSockets allows maintaining a persistent connection between client and server to transmit messages in real time.
 
 ---
 
-# Captura 2 — Flujo TCP completo
+# Capture 2 — Full TCP Flow
 
-![Captura 2](images/wireshark2.png)
+![Capture 2](images/wireshark2.png)
 
-## Análisis
+## Analysis
 
-En esta captura se sigue el flujo completo de la conexión TCP/WebSocket.
+In this capture the complete TCP/WebSocket connection flow is followed.
 
-Se observa:
+We observe:
 
-1. Handshake HTTP inicial
-2. Upgrade a **WebSocket**
-3. Intercambio de frames cifrados
+1. Initial HTTP handshake
+2. Upgrade to **WebSocket**
+3. Exchange of encrypted frames
 
-El servidor no realiza ninguna operación de descifrado.
+The server does not perform any decryption operation.
 
-Los paquetes contienen únicamente:
+Packets contain only:
 
-- blobs cifrados
-- claves públicas
+- encrypted blobs
+- public keys
 - nonces
 
-No se observa texto plano del mensaje enviado por el usuario.
+No plaintext from the user’s message can be observed.
 
 ---
 
-# Captura 3 — Inspección del payload
+# Capture 3 — Payload Inspection
 
-![Captura 3](images/wireshark3.png)
+![Capture 3](images/wireshark3.png)
 
-## Análisis
+## Analysis
 
-Al inspeccionar directamente el payload del paquete WebSocket se observa un JSON similar a:
+When directly inspecting the WebSocket packet payload, we observe JSON similar to:
 
 ```
 {
@@ -256,21 +258,22 @@ Al inspeccionar directamente el payload del paquete WebSocket se observa un JSON
 }
 ```
 
-El campo `ciphertext` contiene datos aparentemente aleatorios.
+The `ciphertext` field contains apparently random data.
 
-Esto confirma que:
+This confirms that:
 
-- el contenido del mensaje no es legible en la red
-- solo el cliente que posee la clave puede descifrarlo
+- the message content is not readable on the network
+- only the client that possesses the key can decrypt it
 
 ---
 
-# Conclusión
+# Conclusion
 
-El análisis de tráfico confirma que:
+Traffic analysis confirms that:
 
-- Los mensajes **no se transmiten en texto plano**
-- El servidor **no tiene acceso al contenido**
-- La confidencialidad se mantiene gracias al cifrado **End‑to‑End**
+- Messages **are not transmitted in plaintext**
+- The server **does not have access to message contents**
+- Confidentiality is preserved thanks to **End‑to‑End encryption**
+
 
 Incluso teniendo acceso completo al tráfico de red, un observador solo puede ver **datos cifrados**, lo cual valida la propiedad de privacidad del sistema.
