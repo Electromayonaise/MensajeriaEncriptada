@@ -44,6 +44,10 @@ Used when the client starts
 
 ![alt text](images/image2.png)
 
+First client inits the room key 
+
+![alt text](images/image6.png)
+
 Key exchange 
 
 ![alt text](images/image3.png)
