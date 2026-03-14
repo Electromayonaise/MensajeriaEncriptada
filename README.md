@@ -64,6 +64,9 @@ Encrypt and Decrypt
 
 ![alt text](images/image7.png)
 
+Sign and verify messages
+
+![alt text](images/image8.png)
 Simplified flow:
 
 1. Each client generates encryption and signing keys.
